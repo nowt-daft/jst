@@ -1,4 +1,4 @@
-import read from "./src/read.js";
+import read from "./read.js";
 
 const SLASH = '/';
 const DOT = '.';
@@ -45,42 +45,12 @@ Object.getPrototypeOf(async function() {}).constructor {
 	/**
 	 * @type {Record<string,TemplateRenderer>}
 	 */
-	static #cache = {};
-	static #is_cache_enabled = false;
-	static #directory = DOT;
-	static #extension = ".jst";
-	static #API = class API {};
+	static cache = {};
+	static is_cache_enabled = false;
+	static directory = DOT;
+	static extension = ".jst";
+	static API;
 	
-	/**
-	 * @param    {string}   path
-	 * @returns  {string}
-	 */
-	static set directory(path) {
-		return this.#directory = path.endsWith(SLASH) ? path.slice(0, -1) : path;
-	}
-	/**
-	 * @param    {boolean}  is_enabled
-	 * @returns  {boolean}
-	 */
-	static set cache(is_enabled) {
-		return this.#is_cache_enabled = is_enabled;
-	}
-	/**
-	 * @param    {string}  ext
-	 * @returns  {string}
-	 */
-	static set extension(ext) {
-		return this.#extension = ext.startsWith(DOT) ? ext : `${ DOT }${ ext }`;
-	}
-
-	/**
-	 * @param    {class}  api
-	 * @returns  {class}
-	 */
-	static set API(api) {
-		return this.#API = api;
-	}
-
 	/**
 	 * Set the configuration of the Template engine.
 	 * 
@@ -92,9 +62,9 @@ Object.getPrototypeOf(async function() {}).constructor {
 	 */
 	static configure({
 		API,
-		directory = this.#directory,
-		cache = this.#cache,
-		extension = this.#extension
+		directory = this.directory,
+		cache = this.cache,
+		extension = this.extension
 	}) {
 		return Object.assign(
 			this,
@@ -121,19 +91,19 @@ Object.getPrototypeOf(async function() {}).constructor {
 	 * @returns  {Promise<TemplateRenderer>}
 	 */
 	static async open(path) {
-		if (this.#cache[path])
-			return this.#cache[path];
+		if (this.cache[path])
+			return this.cache[path];
 		
 		const source = await read(
 			(path.startsWith(SLASH) ?
 				path :
-				`${this.#directory}/${path}`
-			) + this.#extension
+				`${this.directory}/${path}`
+			) + this.extension
 		);
 
 		const renderer = this.create(source);
 
-		return this.#is_cache_enabled ?
+		return this.is_cache_enabled ?
 			this.cache[path] = renderer :
 			renderer;
 	}
@@ -146,7 +116,7 @@ Object.getPrototypeOf(async function() {}).constructor {
 	static async render(path, model) {
 		return await (await this.open(path))(
 			{
-				_: new this.#API(path, model),
+				_: new this.API(this, path, model),
 				...model
 			}
 		);
@@ -159,7 +129,7 @@ Object.getPrototypeOf(async function() {}).constructor {
 	 */
 	static create_master(
 		master_path,
-		globals = {}
+		globals
 	) {
 		return async (
 			path,
@@ -169,7 +139,7 @@ Object.getPrototypeOf(async function() {}).constructor {
 				...globals,
 				item: model
 			};
-			const api = new this.#API(master_path, master_model);
+			const api = new this.API(this, master_path, master_model);
 			return await this.render(
 				master_path,
 				{
@@ -181,3 +151,4 @@ Object.getPrototypeOf(async function() {}).constructor {
 		}
 	}
 }
+

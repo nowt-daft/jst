@@ -1,10 +1,9 @@
-import Template from "./template.js";
-
 const SLASH = '/';
 const DOT_SLASH = './';
 const NEWLINE = '\n';
 
 export default class API {
+	#engine;
 	#path;
 	#model;
 
@@ -13,13 +12,16 @@ export default class API {
 	}
 
 	/**
+	 * @param    {class}   template_engine 
 	 * @param    {string}  path
 	 * @param    {{}}      model
 	 */
 	constructor(
+		template_engine,
 		path,
 		model = {}
 	) {
+		this.#engine = template_engine;
 		this.#path = path.endsWith(SLASH) ? path.slice(0, -1) : path;
 		this.#model = model;
 	}
@@ -100,7 +102,7 @@ export default class API {
 		right_wrap= ""
 	}) {
 		const renderer =
-			await Template.open(
+			await this.#engine.open(
 				this.#render_path(template)
 			);
 
@@ -113,7 +115,7 @@ export default class API {
 					left_wrap
 				}${
 					await renderer({
-						_: new this.constructor(template, model),
+						_: new this.constructor(this.#engine, template, model),
 						...model
 					})
 				}${
@@ -140,9 +142,10 @@ export default class API {
 		path,
 		model = {}
 	) {
-		return await Template.render(
+		const item_model = { parent: this.#model, item: model };
+		return await this.#engine.render(
 			this.#render_path(path),
-			{ parent: this.#model, item: model }
+			item_model
 		);
 	}
 

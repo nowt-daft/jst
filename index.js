@@ -25,10 +25,12 @@ export class JST extends Template {
 
 class HTMLAPI extends API {
 	constructor(
+		template_engine,
 		path,
 		model
 	) {
 		super(
+			template_engine,
 			path,
 			model
 		);
@@ -86,8 +88,12 @@ class HTMLAPI extends API {
 }
 
 export class HTMLTemplate extends Template {
-	constructor(...args) {
-		super(...args);
+	/**
+	 * @param {string}     template
+	 * @param {...string}  params
+	 */
+	constructor(template, ...params) {
+		super(template, ...params);
 	}
 
 	static {
