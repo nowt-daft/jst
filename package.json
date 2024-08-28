@@ -2,6 +2,9 @@
   "name": "jst",
   "module": "index.js",
   "type": "module",
+  "scripts": {
+	"postinstall": "mkdir -p ../@types/jst && cp @types/* ../@types/jst/"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
