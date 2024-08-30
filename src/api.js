@@ -11,6 +11,10 @@ export default class API {
 		return this.#path;
 	}
 
+	get engine() {
+		return this.#engine;
+	}
+
 	/**
 	 * @param    {class}   template_engine 
 	 * @param    {string}  path

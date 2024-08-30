@@ -1,3 +1,4 @@
+import API from './api.js';
 import read from "./read.js";
 
 const SLASH = '/';
@@ -49,7 +50,7 @@ Object.getPrototypeOf(async function() {}).constructor {
 	static is_cache_enabled = false;
 	static directory = DOT;
 	static extension = ".jst";
-	static API;
+	static API = API;
 	
 	/**
 	 * Set the configuration of the Template engine.

@@ -1,5 +1,2 @@
-export class JST extends Template {
-}
-export class HTMLTemplate extends Template {
-}
-import Template from "./src/template.js";
+export { default as Template } from "./src/template.js";
+export { default as HTMLTemplate } from "./src/html/template.js";

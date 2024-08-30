@@ -6,6 +6,7 @@ export default class API {
      */
     constructor(template_engine: class, path: string, model?: {});
     get path(): string;
+    get engine(): class;
     /**
      * Returns the value or an empty string if value is undefined or null.
      *

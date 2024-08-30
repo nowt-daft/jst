@@ -28,7 +28,7 @@ export default class Template extends Function {
     static is_cache_enabled: boolean;
     static directory: string;
     static extension: string;
-    static API: any;
+    static API: typeof API;
     /**
      * Set the configuration of the Template engine.
      *
@@ -80,3 +80,4 @@ export default class Template extends Function {
 export type Iterable = Record<string, any> | any[];
 export type TemplateRenderer = (model: object) => Promise<string>;
 export type MasterTemplateRenderer = (path: string, model: object) => Promise<string>;
+import API from './api.js';
