@@ -1,4 +1,9 @@
 import API from '../api.js';
+import { header_comment, footer_comment } from "./comment.js";
+
+/**
+ * @typedef {string|import("../template.js").TemplateRenderer} Renderer
+ */
 
 const CHARS_MATCH = /[<>"'\r\n&]/g;
 const CHARS_ENCODE = {
@@ -19,12 +24,10 @@ const closing_tag = tag => {
 export default class HTMLAPI extends API {
 	constructor(
 		template_engine,
-		path,
 		model
 	) {
 		super(
 			template_engine,
-			path,
 			model
 		);
 	}
@@ -41,41 +44,63 @@ export default class HTMLAPI extends API {
 			x => `&${CHARS_ENCODE[x]};`
 		);
 	/**
-	 * @param   {object}   param0
-	 * @param   {Iterable} param0.iterable   Data to iterate over
-	 * @param   {string}   param0.template   The template file for each item in the data
-	 * @param   {string}  [param0.tag="ul"]  The default tag that wraps the data list
-	 * @param   {string}  [param0.item_tag="li"]  The default tag that wraps each item.
-	 * @param   {string}  [empty_text]  Text to display if iterable is empty
-	 * @param   {string}  [empty_file]  Template to render if iterable is empty
-	 * @param   {object}  [empty_model={}]  Any data to pass to the empty file
-	 * @returns {string}
+	 * Loop over some data and send that data as a model to the template file.
+	 *
+	 * @param    {Iterable}  iterable
+	 * @param    {Renderer}  template  path to template or renderer function
+	 * @param    {string}    left_wrap
+	 * @param    {string}    right_wrap
+	 * @returns  {Promise<string>}  Template rendered for each item
 	 */
-	async list({
+	async each(
 		iterable,
 		template,
-		tag = "ul",
-		item_tag = "li",
-		empty_text = "",
-		empty_file = "",
-		empty_model = {},
-	}) {
+		left_wrap = "",
+		right_wrap= ""
+	) {
+		return (
+			header_comment(template, iterable) +
+			await super.each(iterable, template, left_wrap, right_wrap) +
+			footer_comment(template)
+		);
+	}
+	/**
+	 * @param   {Iterable} iterable Data to iterate over
+	 * @param   {Renderer} template Path to template or renderer function.
+	 * @param   {Renderer} empty_template Path to file or renderer function.
+	 * @param   {object} param2
+	 * @param   {string} [param2.tag="ul"] Tag that wraps the data list
+	 * @param   {string} [param2.item_tag="li"] Tag that wraps each item.
+	 * @returns {Promise<string>}
+	 */
+	async list(
+		iterable,
+		template,
+		empty_template,
+		{
+			tag = "ul",
+			item_tag = "li"
+		} = {}
+	) {
 		if (Object.keys(iterable).length === 0) {
-			if (empty_file)
-				return await this.engine.render(empty_file, empty_model);
-			return empty_text;
+			if (empty_template)
+				return typeof empty_template === "function" ?
+					await empty_template({}) :
+					await this.engine.render(empty_template, {})
+			return "";
 		}
-		return `<${
+		return `\n\n<${
 			tag
 		}>\n${
-			await this.loop({
+			await this.each(
 				iterable,
 				template,
-				left_wrap: `<${ item_tag }>\n`,
-				right_wrap: `\n</${ closing_tag(item_tag) }>`
-			})
-		}\n</${
+				`<${ item_tag }>`,
+				`</${ closing_tag(item_tag) }>`
+			)
+		}</${
 			closing_tag(tag)
-		}>`;
+		}>\n\n`;
 	}
 }
+

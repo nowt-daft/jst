@@ -1,15 +1,19 @@
-const SLASH = '/';
-const DOT_SLASH = './';
 const NEWLINE = '\n';
 
-export default class API {
-	#engine;
-	#path;
-	#model;
+/**
+ * @typedef {import("./template.js").default} Template
+ */
+/**
+ * @typedef {import("./template.js").Iterable} Iterable
+ */
+/**
+ * @typedef {string|import("./template.js").TemplateRenderer} Renderer
+ */
 
-	get path() {
-		return this.#path;
-	}
+export default class API {
+	/** @type {new => Template} */
+	#engine;
+	#model;
 
 	get engine() {
 		return this.#engine;
@@ -22,11 +26,9 @@ export default class API {
 	 */
 	constructor(
 		template_engine,
-		path,
-		model = {}
+		model = {},
 	) {
 		this.#engine = template_engine;
-		this.#path = path.endsWith(SLASH) ? path.slice(0, -1) : path;
 		this.#model = model;
 	}
 	/**
@@ -92,23 +94,23 @@ export default class API {
 	/**
 	 * Loop over some data and send that data as a model to the template file.
 	 *
-	 * @param    {object}    param0
-	 * @param    {Iterable}  param0.iterable
-	 * @param    {string}    param0.template
-	 * @param    {string}    [param0.left_wrap]
-	 * @param    {string}    [param0.right_wrap]
-	 * @returns  {Promise<string>} Template rendered for each item
+	 * @param    {Iterable}  iterable
+	 * @param    {Renderer}  template  path to template or renderer function
+	 * @param    {string}    left_wrap
+	 * @param    {string}    right_wrap
+	 * @returns  {Promise<string>}  Template rendered for each item
 	 */
-	async loop({
+	async each(
 		iterable,
 		template,
 		left_wrap = "",
 		right_wrap= ""
-	}) {
+	) {
+		/** @type {Renderer} */
 		const renderer =
-			await this.#engine.open(
-				this.#render_path(template)
-			);
+			typeof template === "function" ?
+				template :
+				await this.#engine.open(template);
 
 		/** @type {string[]} */
 		const lines = [];
@@ -119,7 +121,10 @@ export default class API {
 					left_wrap
 				}${
 					await renderer({
-						_: new this.constructor(this.#engine, template, model),
+						_: new this.constructor(
+							this.#engine,
+							model
+						),
 						...model
 					})
 				}${
@@ -128,7 +133,7 @@ export default class API {
 			);
 		}
 
-		return lines.join(NEWLINE);
+		return lines.join(NEWLINE) + NEWLINE;
 	};
 
 	/**
@@ -142,20 +147,14 @@ export default class API {
 	 * @param    {object}  model
 	 * @returns  {Promise<string>}  The rendered template
 	 */
-	async render (
+	async render(
 		path,
 		model = {}
 	) {
 		const item_model = { parent: this.#model, item: model };
 		return await this.#engine.render(
-			this.#render_path(path),
+			path,
 			item_model
 		);
-	}
-
-	#render_path(path) {
-		return path.startsWith(DOT_SLASH) ?
-			this.#path + path.slice(1) :
-			path;
 	}
 }

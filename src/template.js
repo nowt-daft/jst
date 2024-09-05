@@ -12,12 +12,6 @@ const DOT = '.';
  * @param    {object}  model
  * @returns  {Promise<string>} The rendered template using model data.
  */
-/**
- * @callback MasterTemplateRenderer
- * @param    {string}  path    Template file for specific "page" or "content"
- * @param    {object}  model
- * @returns  {Promise<string>} The rendered file wrapped in the master template.
- */
 
 /**
  * Template generates an ASYNCHRONOUS function.
@@ -112,44 +106,16 @@ Object.getPrototypeOf(async function() {}).constructor {
 	/**
 	 * @param    {string}  path
 	 * @param    {object}  model
+	 * @param    {API}     [api]
 	 * @returns  {Promise<string>}  The rendered template file using the provided model
 	 */
-	static async render(path, model) {
+	static async render(path, model, api) {
 		return await (await this.open(path))(
 			{
-				_: new this.API(this, path, model),
+				_: api ?? new this.API(this, model),
 				...model
 			}
 		);
-	}
-
-	/**
-	 * @param    {string}  master_path  Path to the master template file
-	 * @param    {object}  globals      Any global variables accessible at all times.
-	 * @returns  {MasterTemplateRenderer}
-	 */
-	static create_master(
-		master_path,
-		globals
-	) {
-		return async (
-			path,
-			model
-		) => {
-			const master_model = {
-				...globals,
-				item: model
-			};
-			const api = new this.API(this, master_path, master_model);
-			return await this.render(
-				master_path,
-				{
-					_: api,
-					...master_model,
-					content: await api.render(path, model)
-				}
-			);
-		}
 	}
 }
 

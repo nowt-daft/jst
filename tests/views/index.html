@@ -2,9 +2,9 @@
 	${ item.intro }
 </p>
 ${
-	await _.list({
-		iterable: item.list,
-		template: "plaintext",
-		empty_text: "NO ITEMS IN LIST."
-	})
+	await _.list(
+		item.list,
+		({ item, index }) => `${ Number(index) + 1 }. ${ item }`,
+		() => "NO ITEMS IN LIST."
+	)
 }
