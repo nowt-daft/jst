@@ -7,12 +7,6 @@
  * @returns  {Promise<string>} The rendered template using model data.
  */
 /**
- * @callback MasterTemplateRenderer
- * @param    {string}  path    Template file for specific "page" or "content"
- * @param    {object}  model
- * @returns  {Promise<string>} The rendered file wrapped in the master template.
- */
-/**
  * Template generates an ASYNCHRONOUS function.
  * The created function expects the params provided
  * in the constructor and returns a string.
@@ -62,15 +56,10 @@ export default class Template extends Function {
     /**
      * @param    {string}  path
      * @param    {object}  model
+     * @param    {API}     [api]
      * @returns  {Promise<string>}  The rendered template file using the provided model
      */
-    static render(path: string, model: object): Promise<string>;
-    /**
-     * @param    {string}  master_path  Path to the master template file
-     * @param    {object}  globals      Any global variables accessible at all times.
-     * @returns  {MasterTemplateRenderer}
-     */
-    static create_master(master_path: string, globals: object): MasterTemplateRenderer;
+    static render(path: string, model: object, api?: API | undefined): Promise<string>;
     /**
      * @param    {string}     template  Template source string
      * @param    {...string}  params    Variables available to the template
@@ -79,5 +68,4 @@ export default class Template extends Function {
 }
 export type Iterable = Record<string, any> | any[];
 export type TemplateRenderer = (model: object) => Promise<string>;
-export type MasterTemplateRenderer = (path: string, model: object) => Promise<string>;
 import API from './api.js';

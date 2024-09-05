@@ -1,12 +1,20 @@
+/**
+ * @typedef {import("./template.js").default} Template
+ */
+/**
+ * @typedef {import("./template.js").Iterable} Iterable
+ */
+/**
+ * @typedef {string|import("./template.js").TemplateRenderer} Renderer
+ */
 export default class API {
     /**
      * @param    {class}   template_engine
      * @param    {string}  path
      * @param    {{}}      model
      */
-    constructor(template_engine: class, path: string, model?: {});
-    get path(): string;
-    get engine(): class;
+    constructor(template_engine: class, model?: {});
+    get engine(): new () => Template;
     /**
      * Returns the value or an empty string if value is undefined or null.
      *
@@ -31,7 +39,7 @@ export default class API {
      * @param    {(item: any, index: keyof T, iterable: T) => boolean}  filter
      * @returns  {T}
      */
-    filter: <T extends Iterable<any>>(iterable: T, filter: (item: any, index: keyof T, iterable: T) => boolean) => T;
+    filter: <T extends Iterable>(iterable: T, filter: (item: any, index: keyof T, iterable: T) => boolean) => T;
     /**
      * Templating operations should be kept as DUMB as possible.
      * HOWEVER, sometimes a simple map for lists/objects is
@@ -42,23 +50,17 @@ export default class API {
      * @param    {(item: any, index: keyof T, iterable: T) => boolean}  filter
      * @returns  {T}
      */
-    map: <T extends Iterable<any>>(iterable: T, map: any) => T;
+    map: <T extends Iterable>(iterable: T, map: any) => T;
     /**
      * Loop over some data and send that data as a model to the template file.
      *
-     * @param    {object}    param0
-     * @param    {Iterable}  param0.iterable
-     * @param    {string}    param0.template
-     * @param    {string}    [param0.left_wrap]
-     * @param    {string}    [param0.right_wrap]
-     * @returns  {Promise<string>} Template rendered for each item
+     * @param    {Iterable}  iterable
+     * @param    {Renderer}  template  path to template or renderer function
+     * @param    {string}    left_wrap
+     * @param    {string}    right_wrap
+     * @returns  {Promise<string>}  Template rendered for each item
      */
-    loop({ iterable, template, left_wrap, right_wrap }: {
-        iterable: Iterable<any>;
-        template: string;
-        left_wrap?: string | undefined;
-        right_wrap?: string | undefined;
-    }): Promise<string>;
+    each(iterable: Iterable, template: Renderer, left_wrap?: string, right_wrap?: string): Promise<string>;
     /**
      * From within a Template, we might want to render a template
      * from another file and pass in the necessary data.
@@ -73,3 +75,6 @@ export default class API {
     render(path: string, model?: object): Promise<string>;
     #private;
 }
+export type Template = import("./template.js").default;
+export type Iterable = import("./template.js").Iterable;
+export type Renderer = string | import("./template.js").TemplateRenderer;
